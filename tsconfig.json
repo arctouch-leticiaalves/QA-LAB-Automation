@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "ignoreDeprecations": "6.0",
+    "types": [
+      "node",
+      "@wdio/globals/types",
+      "@wdio/cucumber-framework",
+      "expect-webdriverio"
+    ],
+    "outDir": "./.tsbuild",
+    "baseUrl": ".",
+    "paths": {
+      "@screens/*": ["src/screens/*"],
+      "@support/*": ["src/support/*"],
+      "@config/*": ["src/config/*"],
+      "@steps/*": ["src/steps/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "features/**/*.ts", "wdio*.ts", "wdio*.conf.ts"],
+  "exclude": ["node_modules", ".tsbuild", "test-results"]
+}

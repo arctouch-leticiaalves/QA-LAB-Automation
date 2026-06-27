@@ -1,0 +1,16 @@
+node_modules/
+.tsbuild/
+test-results/
+allure-results/
+allure-report/
+.appium/
+*.log
+.env
+
+# Block accidental APK commits, but allow the demo app under test.
+apps/android/*.apk
+!apps/android/QA-Lab.apk
+
+.DS_Store
+.idea/
+.vscode/
