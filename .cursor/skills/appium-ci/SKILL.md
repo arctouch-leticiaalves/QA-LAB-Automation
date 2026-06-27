@@ -164,10 +164,32 @@ jobs:
 - **`reactivecircus/android-emulator-runner@v2`** — community standard for booting an emulator inside `ubuntu-latest`. Handles KVM, cold boot, AVD cache.
 - **AVD cache step** — without it, cold boot dominates the run. The cache key includes API level, target, and arch.
 - **`fail-fast: false`** in matrix — one API level should not block the others while we expand coverage.
-- **Two emulator-runner steps** — first warms the AVD if cache misses; second runs the suite reusing the warm AVD.
+- **Single emulator-runner step** — boot + script in one invocation. Splitting boot ("warmup") and run into two separate steps with `force-avd-creation: false` does NOT preserve the AVD between invocations within the same job — the second invocation either rebuilds the AVD or errors. Use cache for cross-job speed; use a single step within the job.
 - **`concurrency` group** — cancels superseded PR runs to save minutes.
-- **`if: always()` artifact upload** — Allure results upload even on failure; failure-only step adds raw screenshots and Appium logs.
+- **`if: always()` artifact upload** — Allure results and diagnostic evidence upload on every outcome so failures are debuggable without admin auth.
 - **Tag expression input** — `workflow_dispatch` lets reviewers re-run with a custom tag (`@regression and @android`) without editing the file.
+- **Multi-line shell logic in an external `.sh` file** — see the trap below.
+
+## TRAP: `reactivecircus/android-emulator-runner` runs `script:` line-by-line
+
+The action's `script:` input is NOT evaluated as a single bash script. Each line is passed to a separate `sh -c "<line>"` invocation in **Dash** (not bash). Consequences:
+
+- `for / while / case / if` blocks SPLIT across lines blow up with `Syntax error: end of file unexpected (expecting "done")`.
+- `set -e`, `set -x`, variable assignments do NOT persist between lines.
+- Heredocs and continuation `\` do NOT work as you'd expect.
+
+**Fix that works**: put all multi-line logic in a script file in the repo (e.g. `scripts/ci-android-e2e.sh`) and reduce the workflow `script:` to a single invocation:
+
+```yaml
+- uses: reactivecircus/android-emulator-runner@v2
+  env:
+    TAG_EXPRESSION: ${{ github.event.inputs.tag_expression }}
+  with:
+    ...
+    script: bash scripts/ci-android-e2e.sh
+```
+
+This also makes the CI logic testable locally (`bash scripts/ci-android-e2e.sh` against an emulator).
 
 ## Required repository secrets and variables
 
@@ -194,9 +216,10 @@ WDIO config sets `specFileRetries: 1`. CI does not add a job-level retry — fla
 
 - [ ] Workflow file passes `gh actions-lint` or `actionlint` locally.
 - [ ] Triggered run on a draft PR completes (green or with diagnosed failure) within the timeout.
-- [ ] Artifacts upload (Allure + failure evidence) on a deliberately failing scenario.
+- [ ] Artifacts upload (Allure + diagnostic evidence) on every outcome — set `if: always()` for the diagnostic upload.
 - [ ] Cache hit on the second run (`avd-cache` step reports `cache-hit: true`).
 - [ ] No secret leaked into logs (review the raw log for the download step).
+- [ ] **Any multi-line shell logic lives in `scripts/*.sh`, not inline in the `script:` block** (see TRAP above).
 
 ## Related skills
 
