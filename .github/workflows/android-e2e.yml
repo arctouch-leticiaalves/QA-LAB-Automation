@@ -105,29 +105,16 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-${{ env.ANDROID_TARGET }}-${{ env.ANDROID_ARCH }}
+          key: avd-${{ matrix.api-level }}-${{ env.ANDROID_TARGET }}-${{ env.ANDROID_ARCH }}-v2
 
-      - name: Warm up AVD (cache miss only)
-        if: steps.avd-cache.outputs.cache-hit != 'true'
+      - name: Run E2E suite (boot emulator + test)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ env.ANDROID_TARGET }}
           arch: ${{ env.ANDROID_ARCH }}
           profile: ${{ env.EMULATOR_PROFILE }}
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: echo "AVD warm"
-
-      - name: Run E2E suite
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ env.ANDROID_TARGET }}
-          arch: ${{ env.ANDROID_ARCH }}
-          profile: ${{ env.EMULATOR_PROFILE }}
-          force-avd-creation: false
+          force-avd-creation: ${{ steps.avd-cache.outputs.cache-hit != 'true' }}
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: |
