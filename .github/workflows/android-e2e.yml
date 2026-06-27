@@ -131,13 +131,32 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: |
-            set -e
+            set -x
+            cd "$GITHUB_WORKSPACE"
+
+            echo "::group::Environment versions"
+            node -v
+            npm -v
+            adb devices
+            echo "::endgroup::"
+
             adb wait-for-device
+            echo "::group::Wait for boot complete"
+            for i in $(seq 1 90); do
+              boot=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+              if [ "$boot" = "1" ]; then echo "Boot complete (i=$i)"; break; fi
+              sleep 2
+            done
+            [ "$boot" = "1" ] || { echo "::error::Emulator did not finish booting"; exit 1; }
             adb shell input keyevent 82 || true
+            echo "::endgroup::"
 
             echo "::group::Install app under test"
             adb install -r -g "$GITHUB_WORKSPACE/apps/android/QA-Lab.apk"
+            adb shell pm list packages | grep arctouch || { echo "::error::App not installed"; exit 1; }
             echo "::endgroup::"
+
+            mkdir -p test-results/logs test-results/screenshots test-results/allure-results
 
             export APPIUM_HOME="$GITHUB_WORKSPACE/.appium"
             export ANDROID_PLATFORM_VERSION=14
@@ -151,11 +170,33 @@ jobs:
             export APPIUM_HOST=127.0.0.1
             export APPIUM_PORT=4723
 
+            echo "::group::Appium server check"
+            npx appium --version
+            APPIUM_HOME="$APPIUM_HOME" npx appium driver list --installed
+            echo "::endgroup::"
+
             TAGS='${{ github.event.inputs.tag_expression }}'
             if [ -z "$TAGS" ]; then TAGS='@smoke and @android'; fi
             echo "Running with tag expression: $TAGS"
 
-            npx wdio run wdio.android.conf.ts --cucumberOpts.tags="$TAGS"
+            set +e
+            npx wdio run wdio.android.conf.ts --cucumberOpts.tags="$TAGS" --logLevel info
+            WDIO_EXIT=$?
+            echo "::notice::WDIO exit code: $WDIO_EXIT"
+
+            echo "::group::test-results contents"
+            ls -laR test-results/ 2>&1 | head -100 || true
+            echo "::endgroup::"
+
+            echo "::group::Last 200 lines of every wdio log"
+            for f in test-results/logs/*.log; do
+              [ -f "$f" ] || continue
+              echo "----- $f -----"
+              tail -200 "$f"
+            done
+            echo "::endgroup::"
+
+            exit $WDIO_EXIT
 
       - name: Upload Allure results
         if: always()
@@ -166,11 +207,11 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Upload failure evidence (screenshots + logs)
-        if: failure()
+      - name: Upload diagnostic evidence (screenshots + logs)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: failure-evidence-api-${{ matrix.api-level }}
+          name: diagnostic-evidence-api-${{ matrix.api-level }}
           path: |
             test-results/screenshots
             test-results/logs
