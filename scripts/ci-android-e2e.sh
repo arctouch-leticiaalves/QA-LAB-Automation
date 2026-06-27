@@ -34,12 +34,34 @@ fi
 adb shell input keyevent 82 || true
 echo "::endgroup::"
 
+echo "::group::Settle launcher (Pixel Launcher tends to ANR on slow emulators)"
+# Even after sys.boot_completed=1, the system launcher needs additional time
+# on a 2-core software-rendered emulator. Skipping this leads to a
+# "Pixel Launcher isn't responding" dialog overlaying the app and breaking
+# every accessibility-id lookup in the test suite.
+sleep 20
+adb shell wm dismiss-keyguard || true
+adb shell input keyevent 4 || true
+adb shell input keyevent 3 || true
+sleep 3
+echo "::endgroup::"
+
 echo "::group::Install app under test"
 adb install -r -g "$GITHUB_WORKSPACE/apps/android/QA-Lab.apk"
 adb shell pm list packages | grep arctouch || {
   echo "::error::App not installed after adb install"
   exit 1
 }
+echo "::endgroup::"
+
+echo "::group::Pre-launch app + dismiss any system dialogs"
+adb shell am start -n com.arctouch.arctouch_demo_app/.MainActivity
+sleep 8
+# Dismiss any leftover system dialogs (Pixel Launcher ANR, permissions, etc.)
+# uiautomator-based dismissal is more targeted than keyevent.
+adb shell input keyevent 4 || true
+sleep 2
+adb shell dumpsys window 2>/dev/null | grep -E "mCurrentFocus|mFocusedApp" | head -2 || true
 echo "::endgroup::"
 
 mkdir -p test-results/logs test-results/screenshots test-results/allure-results
