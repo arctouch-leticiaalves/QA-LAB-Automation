@@ -30,40 +30,10 @@ export class LoginScreen extends BaseScreen {
   }
 
   async submitForm(email: string, password: string): Promise<void> {
-    await this.fillEmail(email)
-    await this.fillPassword(password)
+    await this.fillTextField(this.emailField, email)
+    await this.fillTextField(this.passwordField, password)
     await this.hideKeyboardIfShown()
     await this.signInButton.click()
-  }
-
-  private async fillEmail(value: string): Promise<void> {
-    const field = this.emailField
-    await field.waitForDisplayed({ timeout: 10_000 })
-    await field.click()
-    await field.clearValue()
-    if (value.length > 0) {
-      await field.setValue(value)
-    }
-  }
-
-  private async fillPassword(value: string): Promise<void> {
-    const field = this.passwordField
-    await field.waitForDisplayed({ timeout: 10_000 })
-    await field.click()
-    await field.clearValue()
-    if (value.length > 0) {
-      await field.setValue(value)
-    }
-  }
-
-  private async hideKeyboardIfShown(): Promise<void> {
-    try {
-      if (await driver.isKeyboardShown()) {
-        await driver.hideKeyboard()
-      }
-    } catch {
-      /* hideKeyboard occasionally throws on Samsung; ignore */
-    }
   }
 
   async isLoaded(): Promise<boolean> {
