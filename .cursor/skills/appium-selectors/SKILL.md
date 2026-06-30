@@ -50,7 +50,7 @@ await $('//android.widget.TextView[contains(@text,"Order #")]').click()
 
 ## Locator hygiene
 
-- Locator strings live in `src/screens/<name>.locators.ts` (one file per screen), exported as a single `<NAME>_LOCATORS` object marked `as const`. The Screen Object imports the namespace and wraps each entry in a `private get`. See `appium-page-object` skill for the file layout.
+- Locator strings live in `src/locators/<name>.locators.ts` (one file per screen, in a dedicated folder — NOT next to the Screen Object), exported as a single `<NAME>_LOCATORS` object marked `as const`. The Screen Object imports the namespace and wraps each entry in a `private get`. See `appium-page-object` skill for the file layout.
 - NEVER let raw locator strings leak into step definitions, features, or the Screen Object body.
 - Name elements by intent, not by widget type: `submitButton`, not `btn1` or `androidButton3`.
 - A single `.locators.ts` MUST own one screen's locators. If two screens share an element, lift it to `support/common-selectors.ts` only after the duplication appears at least twice (rule of three).

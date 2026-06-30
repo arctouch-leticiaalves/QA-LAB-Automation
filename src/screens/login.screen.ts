@@ -1,6 +1,6 @@
 import type { ChainablePromiseElement } from 'webdriverio'
 import { BaseScreen } from '../support/base.screen'
-import { LOGIN_LOCATORS } from './login.locators'
+import { LOGIN_LOCATORS } from '../locators/login.locators'
 
 export class LoginScreen extends BaseScreen {
   private get emailField(): ChainablePromiseElement {

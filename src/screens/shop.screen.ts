@@ -1,6 +1,6 @@
 import type { ChainablePromiseElement } from 'webdriverio'
 import { BaseScreen } from '../support/base.screen'
-import { SHOP_LOCATORS } from './shop.locators'
+import { SHOP_LOCATORS } from '../locators/shop.locators'
 
 export class ShopScreen extends BaseScreen {
   private get productsCounter(): ChainablePromiseElement {

@@ -12,7 +12,7 @@ The Page Object pattern in mobile is commonly called a **Screen Object**: one cl
 1. One file per screen, under `src/screens/`. App-level lifecycle (install check, launch, terminate) lives in `src/support/app.actions.ts`, not in a Screen Object.
 2. Class name = screen name + `Screen`. Example: `LoginScreen`, `OrderListScreen`.
 3. The class extends a shared `BaseScreen` that provides waits, scrolls, and the platform predicate.
-4. Locator **strings** live in a sibling file `src/screens/<name>.locators.ts` exporting a single `<NAME>_LOCATORS` object marked `as const`. The Screen Object imports that object and wraps each entry in a `private get` returning `ChainablePromiseElement`. Locator strings are NEVER inlined in the Screen Object, NEVER inlined in steps, and NEVER exported individually.
+4. Locator **strings** live in `src/locators/<name>.locators.ts` (a dedicated folder, not next to the Screen Object) exporting a single `<NAME>_LOCATORS` object marked `as const`. The Screen Object imports that object and wraps each entry in a `private get` returning `ChainablePromiseElement`. Locator strings are NEVER inlined in the Screen Object, NEVER inlined in steps, and NEVER exported individually.
 5. Methods describe **user intent**, not framework operations. `login(user, pass)` — not `clickButtonById('login_btn')`.
 6. Methods return either `void`, the next Screen Object (for navigations), or a typed value (for reads).
 7. No assertions inside Screen Objects. Assertions live in steps/specs.
@@ -78,20 +78,29 @@ export class LoginScreen extends BaseScreen {
 
 ## Locators file layout (mandatory)
 
-Every screen has a paired `.locators.ts` next to its `.screen.ts`:
+Locator strings live in `src/locators/`, NOT alongside the Screen Objects. The folder tree is:
 
 ```
-src/screens/
-├── login.screen.ts
-├── login.locators.ts
-├── shop.screen.ts
-└── shop.locators.ts
+src/
+├── locators/
+│   ├── login.locators.ts
+│   └── shop.locators.ts
+└── screens/
+    ├── home.screen.ts
+    ├── login.screen.ts
+    └── shop.screen.ts
 ```
+
+Rationale for the dedicated folder (vs. side-by-side):
+
+- `screens/` becomes pure intent (methods, navigation, waits). `locators/` becomes the UI contract — a single audit surface for accessibility-id debt.
+- A reviewer focused on locator quality (or a dev backfilling `contentDescription`) browses one folder and sees every selector the suite makes assumptions about.
+- Scales cleanly as the suite grows: when there are 15+ screens, the `screens/` folder isn't mixing two file types alphabetically.
 
 The locators file exports ONE namespaced object marked `as const`:
 
 ```ts
-// src/screens/login.locators.ts
+// src/locators/login.locators.ts
 export const LOGIN_LOCATORS = {
   emailField: '//android.widget.EditText[contains(@hint, "Email")]',
   passwordField: '//android.widget.EditText[contains(@hint, "Password")]',
@@ -101,30 +110,31 @@ export const LOGIN_LOCATORS = {
 } as const
 ```
 
-The screen file imports it and wraps each entry:
+The screen file imports it via the relative path `../locators/<name>.locators`:
 
 ```ts
 // src/screens/login.screen.ts
-import { LOGIN_LOCATORS } from './login.locators'
+import { LOGIN_LOCATORS } from '../locators/login.locators'
 
 private get emailField(): ChainablePromiseElement {
   return $(LOGIN_LOCATORS.emailField)
 }
 ```
 
-### Why this layout (and not inline)
+### Why a separate file (and not inline)
 
-| Concern | Inline strings in `.screen.ts` | Separate `.locators.ts` |
+| Concern | Inline strings in `.screen.ts` | Dedicated `src/locators/<name>.locators.ts` |
 |---|---|---|
-| Locator debt visibility | scattered through methods, hard to audit | one file = full inventory of "UI assumptions" the test makes |
+| Locator debt visibility | scattered through methods, hard to audit | one folder = full inventory of "UI assumptions" the test makes |
 | Refactor when dev adds `contentDescription` | grep across many files | edit one line in one file |
-| Reviewer mental model | mix of intent and UI strings | "this file is intent (`screen`), this file is UI contract (`locators`)" |
+| Reviewer mental model | mix of intent and UI strings | "screens is intent, locators is UI contract" |
 | File size | classes balloon as screens grow | each file stays under ~50 lines |
 | Per-platform variants (future iOS) | hard | naturally extensible (`login.locators.android.ts` etc.) |
 
 ### Hard rules
 
 - One `<name>.locators.ts` per `<name>.screen.ts`. No exceptions.
+- The locators file lives in `src/locators/`, NOT in `src/screens/`.
 - Export ONE object named `<NAME>_LOCATORS` in UPPER_SNAKE_CASE, with `as const`.
 - Never export individual entries (no `export const EMAIL_FIELD = ...`). Use the namespace.
 - Never inline a locator string in a `.screen.ts` method body or in a `.steps.ts` file.
@@ -133,7 +143,7 @@ private get emailField(): ChainablePromiseElement {
 ## File template
 
 ```ts
-// src/screens/login.locators.ts
+// src/locators/login.locators.ts
 export const LOGIN_LOCATORS = {
   emailField: '//android.widget.EditText[contains(@hint, "Email")]',
   passwordField: '//android.widget.EditText[contains(@hint, "Password")]',
@@ -148,7 +158,7 @@ export const LOGIN_LOCATORS = {
 import { ChainablePromiseElement } from 'webdriverio'
 import { BaseScreen } from '@support/base.screen'
 import { HomeScreen } from '@screens/home.screen'
-import { LOGIN_LOCATORS } from './login.locators'
+import { LOGIN_LOCATORS } from '../locators/login.locators'
 
 export class LoginScreen extends BaseScreen {
   private get emailField(): ChainablePromiseElement {
@@ -255,7 +265,7 @@ Do NOT create one for every transient toast — those go into a small `support/t
 
 ## Verification before merging a new screen
 
-- [ ] Files are `src/screens/<name>.screen.ts` AND `src/screens/<name>.locators.ts`.
+- [ ] Files are `src/screens/<name>.screen.ts` AND `src/locators/<name>.locators.ts` (note the different folders).
 - [ ] `<name>.locators.ts` exports a single `<NAME>_LOCATORS` object marked `as const`.
 - [ ] `<name>.screen.ts` imports the namespace and uses it in every `private get`. No inline selector strings.
 - [ ] Class extends `BaseScreen`.
