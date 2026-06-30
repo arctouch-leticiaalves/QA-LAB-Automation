@@ -140,6 +140,35 @@ private get emailField(): ChainablePromiseElement {
 - Never inline a locator string in a `.screen.ts` method body or in a `.steps.ts` file.
 - Comments above each entry explain non-obvious strategy (why XPath, why `descriptionContains`, etc.). Strategy choice itself follows the `appium-selectors` skill.
 
+### Common (cross-screen) locators
+
+When the same widget appears on 3+ screens, lift the locator into `src/locators/common.locators.ts` under a `COMMON_LOCATORS as const` namespace. Each Screen Object imports both its own namespace and `COMMON_LOCATORS`, picking from either as needed.
+
+```ts
+// src/locators/common.locators.ts
+export const COMMON_LOCATORS = {
+  emailField: '//android.widget.EditText[starts-with(@hint, "Email")]',
+  passwordField: '//android.widget.EditText[starts-with(@hint, "Password input field")]',
+} as const
+```
+
+```ts
+// src/screens/login.screen.ts
+import { COMMON_LOCATORS } from '../locators/common.locators'
+import { LOGIN_LOCATORS } from '../locators/login.locators'
+
+private get emailField()    { return $(COMMON_LOCATORS.emailField) }
+private get signInButton()  { return $(LOGIN_LOCATORS.signInButton) }
+```
+
+Rules for promoting an entry to `common.locators.ts`:
+
+- The widget MUST be visually and behaviorally the same on every screen that uses it (same hint, same role, same component). Verify via UI dump on at least 2 screens before promoting.
+- Used on **3+ screens**. Two occurrences do NOT justify the extraction (rule of three). Keep duplicated until the 3rd hit confirms the abstraction.
+- The XPath / UiSelector / accessibility-id must be IDENTICAL across screens. If one screen needs a stricter matcher (e.g. `starts-with` to disambiguate from a sibling field), use the stricter matcher in `common` so it works everywhere.
+- When the dev team backfills `contentDescription` on the shared widget, one edit in `common.locators.ts` updates all consumers.
+- Locator-debt rows in `LOCATOR_DEBT.md` for common entries list ALL affected screens in one row — never duplicate the row per consumer.
+
 ## File template
 
 ```ts

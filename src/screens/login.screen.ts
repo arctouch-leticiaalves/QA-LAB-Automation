@@ -1,14 +1,15 @@
 import type { ChainablePromiseElement } from 'webdriverio'
 import { BaseScreen } from '../support/base.screen'
+import { COMMON_LOCATORS } from '../locators/common.locators'
 import { LOGIN_LOCATORS } from '../locators/login.locators'
 
 export class LoginScreen extends BaseScreen {
   private get emailField(): ChainablePromiseElement {
-    return $(LOGIN_LOCATORS.emailField)
+    return $(COMMON_LOCATORS.emailField)
   }
 
   private get passwordField(): ChainablePromiseElement {
-    return $(LOGIN_LOCATORS.passwordField)
+    return $(COMMON_LOCATORS.passwordField)
   }
 
   private get signInButton(): ChainablePromiseElement {

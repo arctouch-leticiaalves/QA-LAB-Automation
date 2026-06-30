@@ -4,11 +4,14 @@ Tracks Android elements that lack stable accessibility identifiers and force the
 
 When all items in a row are addressed, delete the row.
 
-| Screen | Element | Current locator | Requested change | Ticket |
+| Screens affected | Element | Current locator | Requested change | Ticket |
 |---|---|---|---|---|
-| Login | Email input | `//android.widget.EditText[contains(@hint, "Email")]` (XPath) | Add `contentDescription="emailField"` to the email TextField | — |
-| Login | Password input | `//android.widget.EditText[contains(@hint, "Password")]` (XPath) | Add `contentDescription="passwordField"` to the password TextField | — |
+| Login, Sign Up (and Forgot Password when it lands) | Email input (shared widget) | `//android.widget.EditText[starts-with(@hint, "Email")]` (XPath) — `COMMON_LOCATORS.emailField` | Add `contentDescription="emailField"` to the shared email TextField widget. One fix backfills all three screens. | — |
+| Login, Sign Up (and Forgot Password when it lands) | Password input (shared widget) | `//android.widget.EditText[starts-with(@hint, "Password input field")]` (XPath) — `COMMON_LOCATORS.passwordField` | Add `contentDescription="passwordField"` to the shared password TextField widget. One fix backfills all three screens. | — |
 | Login | Show password toggle | parent has `content-desc="Show password"` but the actual button has none | Add `contentDescription="passwordVisibilityToggle"` to the IconButton | — |
+| Sign Up | Full Name input | `//android.widget.EditText[starts-with(@hint, "Full name")]` (XPath) | Add `contentDescription="fullNameField"` | — |
+| Sign Up | Phone (optional) input | `//android.widget.EditText[starts-with(@hint, "Phone")]` (XPath) | Add `contentDescription="phoneField"` | — |
+| Sign Up | Confirm Password input | `//android.widget.EditText[starts-with(@hint, "Confirm")]` (XPath) | Add `contentDescription="confirmPasswordField"` | — |
 
 ## Why this list exists
 
