@@ -19,6 +19,11 @@ export class HomeScreen extends BaseScreen {
 
   async hasRenderedUi(): Promise<boolean> {
     const source = await driver.getPageSource()
-    return source.length > 200 && source.includes('<hierarchy')
+    if (source.length < 200) return false
+    if (!source.includes('<hierarchy')) return false
+    // The foreground hierarchy must belong to the QA-Lab app itself, not a
+    // system overlay. Without this check, a "Pixel Launcher isn't responding"
+    // ANR dialog (package="android") would pass the smoke as a false positive.
+    return source.includes(APP_PACKAGE)
   }
 }

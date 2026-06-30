@@ -130,7 +130,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Upload diagnostic evidence (screenshots + logs)
+      - name: Upload diagnostic evidence (screenshots + logs + flake report)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -139,5 +139,24 @@ jobs:
             test-results/screenshots
             test-results/logs
             test-results/*.xml
+            test-results/flake-report.txt
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Surface flake report in run summary
+        if: always()
+        run: |
+          if [ -s test-results/flake-report.txt ]; then
+            {
+              echo "## ⚠️ Flake report"
+              echo
+              echo "The following specs failed on the first attempt and were retried."
+              echo "Each line is a spec that hid a transient failure behind a retry."
+              echo
+              echo '```'
+              cat test-results/flake-report.txt
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ✅ No flakes detected in this run" >> "$GITHUB_STEP_SUMMARY"
+          fi
