@@ -12,7 +12,7 @@ The Page Object pattern in mobile is commonly called a **Screen Object**: one cl
 1. One file per screen, under `src/screens/`. App-level lifecycle (install check, launch, terminate) lives in `src/support/app.actions.ts`, not in a Screen Object.
 2. Class name = screen name + `Screen`. Example: `LoginScreen`, `OrderListScreen`.
 3. The class extends a shared `BaseScreen` that provides waits, scrolls, and the platform predicate.
-4. Locators are `private readonly` getters returning `ChainablePromiseElement`. They are NEVER exported.
+4. Locator **strings** live in a sibling file `src/screens/<name>.locators.ts` exporting a single `<NAME>_LOCATORS` object marked `as const`. The Screen Object imports that object and wraps each entry in a `private get` returning `ChainablePromiseElement`. Locator strings are NEVER inlined in the Screen Object, NEVER inlined in steps, and NEVER exported individually.
 5. Methods describe **user intent**, not framework operations. `login(user, pass)` — not `clickButtonById('login_btn')`.
 6. Methods return either `void`, the next Screen Object (for navigations), or a typed value (for reads).
 7. No assertions inside Screen Objects. Assertions live in steps/specs.
@@ -76,29 +76,95 @@ export class LoginScreen extends BaseScreen {
 }
 ```
 
+## Locators file layout (mandatory)
+
+Every screen has a paired `.locators.ts` next to its `.screen.ts`:
+
+```
+src/screens/
+├── login.screen.ts
+├── login.locators.ts
+├── shop.screen.ts
+└── shop.locators.ts
+```
+
+The locators file exports ONE namespaced object marked `as const`:
+
+```ts
+// src/screens/login.locators.ts
+export const LOGIN_LOCATORS = {
+  emailField: '//android.widget.EditText[contains(@hint, "Email")]',
+  passwordField: '//android.widget.EditText[contains(@hint, "Password")]',
+  signInButton: '~Sign In',
+  welcomeLabel: '~Welcome',
+  errorBanner: 'android=new UiSelector().descriptionStartsWith("Error message")',
+} as const
+```
+
+The screen file imports it and wraps each entry:
+
+```ts
+// src/screens/login.screen.ts
+import { LOGIN_LOCATORS } from './login.locators'
+
+private get emailField(): ChainablePromiseElement {
+  return $(LOGIN_LOCATORS.emailField)
+}
+```
+
+### Why this layout (and not inline)
+
+| Concern | Inline strings in `.screen.ts` | Separate `.locators.ts` |
+|---|---|---|
+| Locator debt visibility | scattered through methods, hard to audit | one file = full inventory of "UI assumptions" the test makes |
+| Refactor when dev adds `contentDescription` | grep across many files | edit one line in one file |
+| Reviewer mental model | mix of intent and UI strings | "this file is intent (`screen`), this file is UI contract (`locators`)" |
+| File size | classes balloon as screens grow | each file stays under ~50 lines |
+| Per-platform variants (future iOS) | hard | naturally extensible (`login.locators.android.ts` etc.) |
+
+### Hard rules
+
+- One `<name>.locators.ts` per `<name>.screen.ts`. No exceptions.
+- Export ONE object named `<NAME>_LOCATORS` in UPPER_SNAKE_CASE, with `as const`.
+- Never export individual entries (no `export const EMAIL_FIELD = ...`). Use the namespace.
+- Never inline a locator string in a `.screen.ts` method body or in a `.steps.ts` file.
+- Comments above each entry explain non-obvious strategy (why XPath, why `descriptionContains`, etc.). Strategy choice itself follows the `appium-selectors` skill.
+
 ## File template
+
+```ts
+// src/screens/login.locators.ts
+export const LOGIN_LOCATORS = {
+  emailField: '//android.widget.EditText[contains(@hint, "Email")]',
+  passwordField: '//android.widget.EditText[contains(@hint, "Password")]',
+  signInButton: '~Sign In',
+  welcomeLabel: '~Welcome',
+  inlineError: '~loginInlineError',
+} as const
+```
 
 ```ts
 // src/screens/login.screen.ts
 import { ChainablePromiseElement } from 'webdriverio'
 import { BaseScreen } from '@support/base.screen'
 import { HomeScreen } from '@screens/home.screen'
+import { LOGIN_LOCATORS } from './login.locators'
 
 export class LoginScreen extends BaseScreen {
   private get emailField(): ChainablePromiseElement {
-    return $('~emailField')
+    return $(LOGIN_LOCATORS.emailField)
   }
 
   private get passwordField(): ChainablePromiseElement {
-    return $('~passwordField')
+    return $(LOGIN_LOCATORS.passwordField)
   }
 
   private get submitButton(): ChainablePromiseElement {
-    return $('~loginSubmit')
+    return $(LOGIN_LOCATORS.signInButton)
   }
 
   private get inlineError(): ChainablePromiseElement {
-    return $('~loginInlineError')
+    return $(LOGIN_LOCATORS.inlineError)
   }
 
   async isLoaded(): Promise<boolean> {
@@ -175,6 +241,7 @@ async tapCheckout(): Promise<CheckoutScreen> {
 - Reusing one Screen Object across two real screens — split them.
 - Methods that mix AAA phases (e.g. an Action that asserts, or a Setup that performs the action under test). Split them.
 - Hard-coded `appPackage` / `appActivity` strings duplicated across files — centralize in `src/config/app.constants.ts`.
+- Inlined locator strings in method bodies. Locators live in `<name>.locators.ts` and are accessed via the `<NAME>_LOCATORS` namespace import.
 
 ## When to add a new Screen Object
 
@@ -188,9 +255,11 @@ Do NOT create one for every transient toast — those go into a small `support/t
 
 ## Verification before merging a new screen
 
-- [ ] File is `src/screens/<name>.screen.ts`.
+- [ ] Files are `src/screens/<name>.screen.ts` AND `src/screens/<name>.locators.ts`.
+- [ ] `<name>.locators.ts` exports a single `<NAME>_LOCATORS` object marked `as const`.
+- [ ] `<name>.screen.ts` imports the namespace and uses it in every `private get`. No inline selector strings.
 - [ ] Class extends `BaseScreen`.
-- [ ] All locators are private and follow `appium-selectors` priority order.
+- [ ] All locator strategies follow `appium-selectors` priority order. XPath entries are commented and listed in `LOCATOR_DEBT.md`.
 - [ ] `isLoaded()` and `waitUntilLoaded()` exist.
 - [ ] No assertions, no logs, no pauses, no env reads.
 - [ ] Navigation methods return the destination screen.

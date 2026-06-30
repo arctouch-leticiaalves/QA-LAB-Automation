@@ -70,6 +70,7 @@ A finding in this section blocks merge.
 - [ ] Method names describe user intent, not framework operations.
 - [ ] Each method is single-phase (Setup OR Action OR Query, never two).
 - [ ] No `appPackage` / `appActivity` string hardcoded — comes from `src/config/app.constants.ts`.
+- [ ] **Locator strings live in `src/screens/<name>.locators.ts`**, exported via a single `<NAME>_LOCATORS as const` object. NO inline locator strings in the screen file or in steps.
 
 ### Gherkin convention
 

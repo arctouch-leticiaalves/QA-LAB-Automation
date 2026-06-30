@@ -1,31 +1,26 @@
 import type { ChainablePromiseElement } from 'webdriverio'
 import { BaseScreen } from '../support/base.screen'
-
-// XPath used because the email/password EditTexts have no content-desc and no
-// resource-id, only a `hint` attribute. UiSelector cannot match by hint.
-// Tracked in LOCATOR_DEBT.md — dev team to add contentDescription.
-const EMAIL_FIELD = '//android.widget.EditText[contains(@hint, "Email")]'
-const PASSWORD_FIELD = '//android.widget.EditText[contains(@hint, "Password")]'
+import { LOGIN_LOCATORS } from './login.locators'
 
 export class LoginScreen extends BaseScreen {
   private get emailField(): ChainablePromiseElement {
-    return $(EMAIL_FIELD)
+    return $(LOGIN_LOCATORS.emailField)
   }
 
   private get passwordField(): ChainablePromiseElement {
-    return $(PASSWORD_FIELD)
+    return $(LOGIN_LOCATORS.passwordField)
   }
 
   private get signInButton(): ChainablePromiseElement {
-    return $('~Sign In')
+    return $(LOGIN_LOCATORS.signInButton)
   }
 
   private get welcomeLabel(): ChainablePromiseElement {
-    return $('~Welcome')
+    return $(LOGIN_LOCATORS.welcomeLabel)
   }
 
   private get errorBanner(): ChainablePromiseElement {
-    return $('android=new UiSelector().descriptionStartsWith("Error message")')
+    return $(LOGIN_LOCATORS.errorBanner)
   }
 
   async waitUntilLoaded(timeoutMs = 15_000): Promise<void> {

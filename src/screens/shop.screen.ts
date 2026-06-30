@@ -1,13 +1,14 @@
 import type { ChainablePromiseElement } from 'webdriverio'
 import { BaseScreen } from '../support/base.screen'
+import { SHOP_LOCATORS } from './shop.locators'
 
 export class ShopScreen extends BaseScreen {
   private get productsCounter(): ChainablePromiseElement {
-    return $('android=new UiSelector().descriptionContains("Showing")')
+    return $(SHOP_LOCATORS.productsCounter)
   }
 
   private get allCategoryChip(): ChainablePromiseElement {
-    return $('~All')
+    return $(SHOP_LOCATORS.allCategoryChip)
   }
 
   async waitUntilLoaded(timeoutMs = 15_000): Promise<void> {
