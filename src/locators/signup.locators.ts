@@ -1,33 +1,35 @@
-// Locators for the Sign Up screen. See appium-page-object skill for layout
-// rules and appium-selectors skill for selection priority. XPath entries
-// must have a matching row in /LOCATOR_DEBT.md.
-//
-// Note: emailField and passwordField live in `common.locators.ts` — they
-// are the same Flutter widget used on Login, Sign Up, and Forgot Password.
-
 export const SIGNUP_LOCATORS = {
   backButton: '~Back',
 
-  // Form fields — none of the EditTexts has a content-desc or resource-id,
-  // only a `hint`. starts-with (instead of contains) is mandatory here so
-  // that "Confirm Password" does not collide with the primary Password
-  // field (which lives in common.locators.ts).
   fullNameField: '//android.widget.EditText[starts-with(@hint, "Full name")]',
+
   phoneField: '//android.widget.EditText[starts-with(@hint, "Phone")]',
+
   confirmPasswordField: '//android.widget.EditText[starts-with(@hint, "Confirm")]',
 
-  // Visibility toggles
   showPasswordToggle: '~Show password',
+
   showConfirmPasswordToggle: '~Show confirm password',
 
-  // Terms
   termsCheckbox: '~Terms and conditions checkbox',
 
-  // CTAs
-  createAccountButton: '~Create Account',
+  // "Create Account" appears twice with identical content-desc: as the
+  // app-bar title (clickable=false) and as the bottom CTA (clickable=true).
+  // clickable() isolates each without falling back to XPath.
+  titleLabel: 'android=new UiSelector().description("Create Account").clickable(false)',
+  createAccountButton: 'android=new UiSelector().description("Create Account").clickable(true)',
+
   signInLink: '~Go to sign in',
 
-  // Validation banner — same pattern as Login. Verify on first run that the
-  // same descriptionStartsWith prefix is reused; otherwise update here.
-  errorBanner: 'android=new UiSelector().descriptionStartsWith("Error message")',
+  // Inline field validation errors (android.view.View with live-region="1" inside each EditText)
+  fieldError: '//android.view.View[@live-region="1"]',
+
+  // Server-side error banner rendered directly from the API response.
+  // content-desc does NOT use the "Error message: " prefix (unlike the login screen).
+  errorBanner: '~An account with this email already exists.',
+
+  // Toast shown after successful account creation: "Account created
+  // successfully! Please sign in." descriptionContains ("Account created")
+  // is stable if the exact copy changes ("successfully" → "success").
+  successToast: 'android=new UiSelector().descriptionContains("Account created")',
 } as const

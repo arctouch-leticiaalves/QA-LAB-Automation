@@ -2,6 +2,7 @@ import type { ChainablePromiseElement } from 'webdriverio'
 import { BaseScreen } from '../support/base.screen'
 import { COMMON_LOCATORS } from '../locators/common.locators'
 import { LOGIN_LOCATORS } from '../locators/login.locators'
+import { SignupScreen } from './signup.screen'
 
 export class LoginScreen extends BaseScreen {
   private get emailField(): ChainablePromiseElement {
@@ -22,6 +23,10 @@ export class LoginScreen extends BaseScreen {
 
   private get errorBanner(): ChainablePromiseElement {
     return $(LOGIN_LOCATORS.errorBanner)
+  }
+
+  private get signUpLink(): ChainablePromiseElement {
+    return $(LOGIN_LOCATORS.signUpLink)
   }
 
   async waitUntilLoaded(timeoutMs = 15_000): Promise<void> {
@@ -48,5 +53,12 @@ export class LoginScreen extends BaseScreen {
     await this.errorBanner.waitForDisplayed({ timeout: 5_000 })
     const desc = (await this.errorBanner.getAttribute('content-desc')) ?? ''
     return desc.replace(/^Error message\s*/u, '').trim()
+  }
+
+  async tapSignUpLink(): Promise<SignupScreen> {
+    await this.signUpLink.click()
+    const signup = new SignupScreen()
+    await signup.waitUntilLoaded()
+    return signup
   }
 }
