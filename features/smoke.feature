@@ -1,9 +1,3 @@
-# Smoke wiring test for the QA-Lab Android automation harness.
-# Validates Appium session, app package/activity, and rendered UI without
-# depending on copy or visuals that may change.
-# Pattern: AAA (Arrange · Act · Assert) mapped onto Given · When · Then.
-# AUTOMATION_TBD: yes — wiring proof, prerequisite for all other suites.
-
 Feature: Automation harness smoke
 
   As a QA engineer

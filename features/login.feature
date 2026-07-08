@@ -1,8 +1,3 @@
-# Login behavior on the QA-Lab Android app.
-# Pattern: AAA (Arrange · Act · Assert) mapped onto Given · When · Then.
-# Default credentials shown by the app banner: testing@arctouch.com / QA1234.
-# AUTOMATION_TBD: yes — login is the entry point of every user journey.
-
 Feature: User login
 
   As a registered user

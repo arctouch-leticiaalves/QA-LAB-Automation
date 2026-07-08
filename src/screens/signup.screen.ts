@@ -83,12 +83,6 @@ export class SignupScreen extends BaseScreen {
             return false
         }
     }
-
-    /**
-     * Toasts on Android are short-lived (~2s). Call this immediately after
-     * submitForm, BEFORE any wait on the next screen — otherwise the toast
-     * animation will have completed and the element is gone.
-     */
     async hasSuccessToast(timeoutMs = 3_000): Promise<boolean> {
         try {
             await this.successToast.waitForDisplayed({ timeout: timeoutMs })
