@@ -20,6 +20,22 @@ export class ShopScreen extends BaseScreen {
     return $(SHOP_LOCATORS.firstProductCard)
   }
 
+  private get favIcon(): ChainablePromiseElement {
+    return $(SHOP_LOCATORS.firstProductFavoriteIcon)
+  }
+
+  private get menuActions(): ChainablePromiseElement {
+    return $(SHOP_LOCATORS.longPressMenu)
+  }
+
+  private get addToCart(): ChainablePromiseElement {
+    return $(SHOP_LOCATORS.longPressAddToCart)
+  }
+
+  private get addToCartSnackbar(): ChainablePromiseElement {
+    return $(SHOP_LOCATORS.addedToCartSnackbar)
+  }
+
   async waitUntilLoaded(timeoutMs = 15_000): Promise<void> {
     await this.productsCounter.waitForDisplayed({ timeout: timeoutMs })
     await this.allCategoryChip.waitForDisplayed({ timeout: timeoutMs })
@@ -68,6 +84,65 @@ export class ShopScreen extends BaseScreen {
   async tapFirstProduct(): Promise<ProductDetailScreen> {
     await this.firstProductCard.waitForDisplayed({ timeout: 5_000 })
     await this.firstProductCard.click()
+    const detail = new ProductDetailScreen()
+    await detail.waitUntilLoaded()
+    return detail
+  }
+
+  private async getFavIconDesc(): Promise<string> {
+    const desc = (await this.favIcon.getAttribute('content-desc').catch(() => '')) ?? ''
+    return desc.toLowerCase()
+  }
+
+  async ensureProductIsNotFavorited(): Promise<void> {
+    const desc = await this.getFavIconDesc()
+    if (desc.startsWith('remove')) {
+      await this.favIcon.click()
+      await browser.pause(500)
+    }
+  }
+
+  async tapFavIcon(): Promise<void> {
+    await this.favIcon.waitForDisplayed({ timeout: 5_000 })
+    await this.favIcon.click()
+    await browser.pause(500)
+  }
+
+  async isFavIconSelected(): Promise<boolean> {
+    await this.favIcon.waitForDisplayed({ timeout: 5_000 })
+    const desc = await this.getFavIconDesc()
+    return desc.startsWith('remove')
+  }
+
+  async longPressFirstProduct(): Promise<void> {
+    const el = await this.firstProductCard.waitForDisplayed({ timeout: 5_000 }).then(() => this.firstProductCard)
+    await driver.execute('mobile: longClickGesture', {
+      elementId: el.elementId,
+      duration: 1500,
+    })
+    await browser.pause(500)
+    await this.menuActions.waitForDisplayed({ timeout: 5_000})
+  }
+
+  async tapAddToCart(): Promise<void> {
+    await this.menuActions.waitForDisplayed({ timeout: 5_000 })
+    await this.addToCart.click()
+  }
+
+  async addToCartSnackbarVisible(): Promise<boolean> {
+    return this.addToCartSnackbar.waitForDisplayed({ timeout: 5_000 }).then(() => true).catch(() => false)
+  }
+
+  async tapAddToFavorites(): Promise<void> {
+    const btn = $(SHOP_LOCATORS.longPressAddToFavorites)
+    await btn.waitForDisplayed({ timeout: 5_000 })
+    await btn.click()
+  }
+
+  async tapViewDetails(): Promise<ProductDetailScreen> {
+    const btn = $(SHOP_LOCATORS.longPressViewDetails)
+    await btn.waitForDisplayed({ timeout: 5_000 })
+    await btn.click()
     const detail = new ProductDetailScreen()
     await detail.waitUntilLoaded()
     return detail

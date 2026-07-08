@@ -44,3 +44,32 @@ Feature: Shop product browsing
   Scenario: Tapping a product card navigates to the product detail screen
     When the user taps the first product in the list
     Then the user should be navigated to the product detail screen
+
+  @regression @high @shop @android
+  Scenario: Tapping the favorite icon on a product card adds it to favorites
+    When the user taps the favorite icon on the first product card
+    Then the favorite icon should appear as selected
+
+  @regression @high @shop @android
+  Scenario: Tapping the favorite icon again on a product card removes it from favorites
+    When the user taps the favorite icon on the first product card
+    And the user taps the favorite icon on the first product card again
+    Then the favorite icon should appear as unselected
+
+  @regression @high @shop @android
+  Scenario: Long pressing a product and selecting Add to Cart adds the item to the cart
+    When the user long presses the first product in the list
+    And the user taps Add to Cart from the context menu
+    Then the item should be added to the cart
+
+  @regression @high @shop @android
+  Scenario: Long pressing a product and selecting Add to Favorites adds the item to favorites
+    When the user long presses the first product in the list
+    And the user taps Add to Favorites from the context menu
+    Then the item should be added to favorites
+
+  @regression @high @shop @android
+  Scenario: Long pressing a product and selecting View Details navigates to the product detail screen
+    When the user long presses the first product in the list
+    And the user taps View Details from the context menu
+    Then the user should be navigated to the product detail screen

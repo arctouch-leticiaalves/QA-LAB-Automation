@@ -11,6 +11,19 @@ export const SHOP_LOCATORS = {
 
   firstProductCard: 'android=new UiSelector().descriptionContains("Product card:").instance(0)',
 
+  firstProductFavoriteIcon: 'android=new UiSelector().descriptionContains("favorites").instance(0)',
+
+  longPressMenu: 'android=new UiSelector().descriptionContains("Product actions menu")',
+
+  longPressAddToCart: 'android=new UiSelector().descriptionContains("Add to Cart")',
+
+  longPressAddToFavorites: 'android=new UiSelector().descriptionContains("Add to Favorites")',
+
+  longPressViewDetails: 'android=new UiSelector().descriptionContains("View Details")',
+
+  addedToCartSnackbar: 'android=new UiSelector().descriptionContains("added to cart")',
+  viewCartButton: '~VIEW CART',
+
   listViewToggle: '~Switch to list view',
   gridViewToggle: '~Switch to grid view',
 

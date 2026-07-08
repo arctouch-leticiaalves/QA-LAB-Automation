@@ -13,6 +13,7 @@ Given(/^the user is on the shop screen$/, async function () {
   await this.login.submitForm('testing@arctouch.com', 'QA1234')
   this.shop = new ShopScreen()
   await this.shop.waitUntilLoaded()
+  await this.shop.ensureProductIsNotFavorited()
 })
 
 Then(/^the shop should display a list of products$/, async function () {
@@ -65,4 +66,44 @@ When(/^the user taps the first product in the list$/, async function () {
 
 Then(/^the user should be navigated to the product detail screen$/, async function () {
   expect(await this.productDetail.isLoaded()).toBe(true)
+})
+
+When(/^the user taps the favorite icon on the first product card$/, async function () {
+  await this.shop.tapFavIcon()
+})
+
+Then(/^the favorite icon should appear as selected$/, async function () {
+  expect(await this.shop.isFavIconSelected()).toBe(true)
+})
+
+When(/^the user taps the favorite icon on the first product card again$/, async function () {
+  await this.shop.tapFavIcon()
+})
+
+Then(/^the favorite icon should appear as unselected$/, async function () {
+  expect(await this.shop.isFavIconSelected()).toBe(false)
+})
+
+When(/^the user long presses the first product in the list$/, async function () {
+  await this.shop.longPressFirstProduct()
+})
+
+When(/^the user taps Add to Cart from the context menu$/, async function () {
+  await this.shop.tapAddToCart()
+})
+
+Then(/^the item should be added to the cart$/, async function () {
+  expect(await this.shop.addToCartSnackbarVisible()).toBe(true)
+})
+
+When(/^the user taps Add to Favorites from the context menu$/, async function () {
+  await this.shop.tapAddToFavorites()
+})
+
+Then(/^the item should be added to favorites$/, async function () {
+  expect(await this.shop.isFavIconSelected()).toBe(true)
+})
+
+When(/^the user taps View Details from the context menu$/, async function () {
+  this.productDetail = await this.shop.tapViewDetails()
 })
