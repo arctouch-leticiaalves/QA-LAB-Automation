@@ -73,3 +73,14 @@ Feature: Shop product browsing
     When the user long presses the first product in the list
     And the user taps View Details from the context menu
     Then the user should be navigated to the product detail screen
+
+  @regression @medium @shop @android
+  Scenario: Switching from list view to grid view updates the product layout
+    When the user switches to grid view
+    Then the products should be displayed in grid view
+
+  @regression @medium @shop @android
+  Scenario: Switching from grid view back to list view updates the product layout
+    When the user switches to grid view
+    And the user switches to list view
+    Then the products should be displayed in list view

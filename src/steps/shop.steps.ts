@@ -107,3 +107,20 @@ Then(/^the item should be added to favorites$/, async function () {
 When(/^the user taps View Details from the context menu$/, async function () {
   this.productDetail = await this.shop.tapViewDetails()
 })
+
+When(/^the user switches to grid view$/, async function () {
+  await this.shop.tapGridView()
+})
+
+When(/^the user switches to list view$/, async function () {
+  await this.shop.tapListView()
+})
+
+Then(/^the products should be displayed in grid view$/, async function () {
+  expect(await this.shop.isInGridView()).toBe(true)
+})
+
+Then(/^the products should be displayed in list view$/, async function () {
+  expect(await this.shop.isInListView()).toBe(true)
+})
+

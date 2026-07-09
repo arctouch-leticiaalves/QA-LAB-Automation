@@ -36,6 +36,13 @@ export class ShopScreen extends BaseScreen {
     return $(SHOP_LOCATORS.addedToCartSnackbar)
   }
 
+  private get listToggle(): ChainablePromiseElement {
+    return $(SHOP_LOCATORS.listViewToggle)
+  }
+
+  private get gridToggle(): ChainablePromiseElement {
+    return $(SHOP_LOCATORS.gridViewToggle)
+  }
   async waitUntilLoaded(timeoutMs = 15_000): Promise<void> {
     await this.productsCounter.waitForDisplayed({ timeout: timeoutMs })
     await this.allCategoryChip.waitForDisplayed({ timeout: timeoutMs })
@@ -147,4 +154,31 @@ export class ShopScreen extends BaseScreen {
     await detail.waitUntilLoaded()
     return detail
   }
-}
+
+  async ensureListView(): Promise<void> {
+    const inGridView = await this.listToggle.isDisplayed().catch(() => false)
+    if (inGridView) {
+      await this.listToggle.click()
+      await browser.pause(500)
+    }
+  }
+
+  async isInGridView(): Promise<boolean> {
+    return this.listToggle.isDisplayed().catch(() => false)
+  }
+  async isInListView(): Promise<boolean> {
+    return this.gridToggle.isDisplayed().catch(() => false)
+  }
+  async tapGridView(): Promise<void> {
+    await this.ensureListView()
+    await this.gridToggle.waitForDisplayed({ timeout: 5_000 })
+    await this.gridToggle.click()
+    await browser.pause(500)
+  }
+  async tapListView(): Promise<void> {
+    await this.listToggle.waitForDisplayed({ timeout: 5_000 })
+    await this.listToggle.click()
+    await browser.pause(500)
+  }
+
+} 
