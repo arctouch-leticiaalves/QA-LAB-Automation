@@ -26,7 +26,7 @@ export const baseConfig: Omit<WebdriverIO.Config, 'capabilities'> = {
   connectionRetryTimeout: 120_000,
   connectionRetryCount: 2,
 
-  specFileRetries: 1,
+  specFileRetries: 0,
   specFileRetriesDelay: 5,
   specFileRetriesDeferred: true,
 
