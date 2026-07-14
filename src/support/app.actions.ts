@@ -15,6 +15,11 @@ export class AppActions {
     await driver.terminateApp(this.packageName)
   }
 
+  /** Force-stops the app and wipes its data (cart, session, snackbars, hints). */
+  async clearData(): Promise<void> {
+    await driver.execute('mobile: clearApp', { appId: this.packageName })
+  }
+
   async restart(): Promise<void> {
     await this.terminate()
     await this.launch()

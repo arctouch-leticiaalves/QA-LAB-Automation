@@ -24,4 +24,15 @@ export class ProductDetailScreen extends BaseScreen {
     const desc = (await this.productNameTitle.getAttribute('content-desc')) ?? ''
     return desc.replace(/^Product name:\s*/u, '').split('\n')[0].trim()
   }
+
+  async tapAddToCart(): Promise<void> {
+    await this.addToCartButton.waitForDisplayed({ timeout: 5_000 })
+    await this.addToCartButton.click()
+    // The confirmation snackbar is the signal that the item registered in the cart
+    await $(PRODUCT_DETAIL_LOCATORS.addedToCartSnackbar).waitForDisplayed({ timeout: 5_000 })
+  }
+
+  async goBack(): Promise<void> {
+    await browser.back()
+  }
 }
