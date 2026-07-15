@@ -15,7 +15,7 @@ Given(/^the device has the QA-Lab app installed$/, async () => {
 
 When(/^the QA-Lab app is launched$/, async function () {
   await app.launch()
-  this.home = new HomeScreen() 
+  this.home = new HomeScreen()
   await this.home.waitUntilLoaded()
 })
 
