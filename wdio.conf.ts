@@ -22,9 +22,9 @@ export const baseConfig: Omit<WebdriverIO.Config, 'capabilities'> = {
   outputDir: resolve(resultsDir, 'logs'),
   bail: 0,
   baseUrl: '',
-  waitforTimeout: 15_000,
-  connectionRetryTimeout: 120_000,
-  connectionRetryCount: 2,
+  waitforTimeout: 10_000,
+  connectionRetryTimeout: 30_000,
+  connectionRetryCount: 1,
 
   specFileRetries: 0,
   specFileRetriesDelay: 5,
@@ -55,7 +55,8 @@ export const baseConfig: Omit<WebdriverIO.Config, 'capabilities'> = {
     source: true,
     strict: true,
     tags: '@android',
-    timeout: 120_000,
+    // Fail a stuck step quickly; do not sit on hung Appium commands for minutes.
+    timeout: 30_000,
     ignoreUndefinedDefinitions: false,
   },
 

@@ -2,7 +2,8 @@ import { resolve } from 'node:path'
 import { baseConfig } from './wdio.conf'
 import { androidCaps, appiumHost, appiumPort } from './src/config/capabilities'
 
-process.env.APPIUM_HOME = process.env.APPIUM_HOME ?? resolve(__dirname, '.appium')
+// Always prefer the project-local Appium home so drivers resolve from this repo.
+process.env.APPIUM_HOME = resolve(__dirname, '.appium')
 
 export const config: WebdriverIO.Config = {
   ...baseConfig,

@@ -123,4 +123,3 @@ Then(/^the products should be displayed in grid view$/, async function () {
 Then(/^the products should be displayed in list view$/, async function () {
   expect(await this.shop.isInListView()).toBe(true)
 })
-

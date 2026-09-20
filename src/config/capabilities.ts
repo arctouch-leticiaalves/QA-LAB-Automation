@@ -35,9 +35,10 @@ export const androidCaps: WebdriverIO.Capabilities[] = [
     'appium:noReset': boolEnv('ANDROID_NO_RESET', true),
     'appium:fullReset': false,
     'appium:autoGrantPermissions': true,
-    'appium:newCommandTimeout': 240,
-    'appium:adbExecTimeout': 60_000,
-    'appium:uiautomator2ServerInstallTimeout': 120_000,
+    // Keep this low so a stuck command fails fast instead of hanging ~4 minutes.
+    'appium:newCommandTimeout': 60,
+    'appium:adbExecTimeout': 30_000,
+    'appium:uiautomator2ServerInstallTimeout': 60_000,
     'appium:disableWindowAnimation': true,
   } as unknown as WebdriverIO.Capabilities,
 ]

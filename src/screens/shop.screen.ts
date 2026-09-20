@@ -40,6 +40,10 @@ export class ShopScreen extends BaseScreen {
     return $(SHOP_LOCATORS.listViewToggle)
   }
 
+  private get shopTab(): ChainablePromiseElement {
+    return $(SHOP_LOCATORS.shopTab)
+  }
+
   private get gridToggle(): ChainablePromiseElement {
     return $(SHOP_LOCATORS.gridViewToggle)
   }
@@ -56,6 +60,19 @@ export class ShopScreen extends BaseScreen {
       .isDisplayed()
       .catch(() => false)
     return counterVisible && allChipVisible
+  }
+
+  async openFromNavBar(): Promise<void> {
+    await this.waitFor(this.shopTab, 5_000)
+    await this.shopTab.click()
+    await this.waitUntilLoaded()
+  }
+
+  async getFirstProductName(): Promise<string> {
+    await this.firstProductCard.waitForDisplayed({ timeout: 5_000 })
+    const desc =
+      (await this.firstProductCard.getAttribute('content-desc')) ?? ''
+    return desc.replace(/^Product card:\s*/u, '').split('\n')[0].trim()
   }
 
   async getProductsCounterText(): Promise<string> {

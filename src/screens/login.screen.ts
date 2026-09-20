@@ -3,6 +3,7 @@ import { BaseScreen } from '../support/base.screen'
 import { COMMON_LOCATORS } from '../locators/common.locators'
 import { LOGIN_LOCATORS } from '../locators/login.locators'
 import { SignupScreen } from './signup.screen'
+import { ForgotPasswordScreen } from './forgot-password.screen'
 
 export class LoginScreen extends BaseScreen {
   private get emailField(): ChainablePromiseElement {
@@ -27,6 +28,10 @@ export class LoginScreen extends BaseScreen {
 
   private get signUpLink(): ChainablePromiseElement {
     return $(LOGIN_LOCATORS.signUpLink)
+  }
+
+  private get forgotPasswordLink(): ChainablePromiseElement {
+    return $(LOGIN_LOCATORS.forgotPasswordLink)
   }
 
   async waitUntilLoaded(timeoutMs = 15_000): Promise<void> {
@@ -60,5 +65,13 @@ export class LoginScreen extends BaseScreen {
     const signup = new SignupScreen()
     await signup.waitUntilLoaded()
     return signup
+  }
+
+  async tapForgotPasswordLink(): Promise<ForgotPasswordScreen> {
+    await this.waitFor(this.forgotPasswordLink, 5_000)
+    await this.forgotPasswordLink.click()
+    const forgotPassword = new ForgotPasswordScreen()
+    await forgotPassword.waitUntilLoaded()
+    return forgotPassword
   }
 }
