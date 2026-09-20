@@ -3,6 +3,7 @@ import { AppActions } from '../support/app.actions'
 import { LoginScreen } from '../screens/login.screen'
 import { ShopScreen } from '../screens/shop.screen'
 import { CartScreen } from '../screens/cart.screen'
+import { checkoutData } from '../support/test-data/checkout'
 
 const app = new AppActions()
 
@@ -97,4 +98,67 @@ When(/^the user taps Proceed to Checkout$/, async function () {
 
 Then(/^the user should be navigated to the checkout screen$/, async function () {
   expect(await this.checkout.isLoaded()).toBe(true)
+})
+
+When(/^the user completes the address step with valid details$/, async function () {
+  this.checkoutData = checkoutData.valid()
+  await this.checkout.completeAddressStep(this.checkoutData.address)
+})
+
+When(/^the user submits the address step with empty fields$/, async function () {
+  await this.checkout.submitAddressStep(checkoutData.emptyAddress())
+})
+
+When(/^the user completes the payment step with valid details$/, async function () {
+  await this.checkout.completePaymentStep(this.checkoutData.payment)
+})
+
+When(/^the user submits the payment step with empty fields$/, async function () {
+  await this.checkout.submitPaymentStep(checkoutData.emptyPayment())
+})
+
+When(
+  /^the user submits the payment step with an invalid short card number$/,
+  async function () {
+    await this.checkout.submitPaymentStep(checkoutData.invalidShortCard())
+  },
+)
+
+When(/^the user completes the payment step with a declined card$/, async function () {
+  await this.checkout.completePaymentStep(checkoutData.declinedCard())
+})
+
+When(/^the user reviews and places the order$/, async function () {
+  await this.checkout.placeOrderAndWaitForConfirmation()
+})
+
+When(/^the user places the order$/, async function () {
+  await this.checkout.placeOrder()
+})
+
+Then(/^the order confirmation should be displayed$/, async function () {
+  expect(await this.checkout.isOrderConfirmationDisplayed()).toBe(true)
+})
+
+Then(/^the order confirmation should not be displayed$/, async function () {
+  expect(await this.checkout.isOrderConfirmationDisplayed(2_000)).toBe(false)
+})
+
+Then(/^the checkout address step should still be displayed$/, async function () {
+  expect(await this.checkout.isOnAddressStep()).toBe(true)
+})
+
+Then(/^the checkout payment step should still be displayed$/, async function () {
+  expect(await this.checkout.isOnPaymentStep()).toBe(true)
+})
+
+Then(
+  /^a checkout validation error containing (.+) should be visible$/,
+  async function (text: string) {
+    expect(await this.checkout.hasValidationError(text)).toBe(true)
+  },
+)
+
+Then(/^the payment declined message should be displayed$/, async function () {
+  expect(await this.checkout.isPaymentDeclinedDisplayed()).toBe(true)
 })

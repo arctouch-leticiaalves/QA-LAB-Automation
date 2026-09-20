@@ -39,6 +39,12 @@ export const PROFILE_LOCATORS = {
   editProfileButton:
     'android=new UiSelector().descriptionContains("Edit profile button")',
 
+  myOrdersButton:
+    'android=new UiSelector().descriptionContains("My orders button")',
+
+  myFavoritesButton:
+    'android=new UiSelector().descriptionContains("My favorites button")',
+
   // Toast/snackbar shown after a successful profile save.
   successToast: 'android=new UiSelector().descriptionContains("Profile updated")',
 } as const
